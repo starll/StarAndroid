@@ -7,12 +7,14 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class MyService extends Service {
 
     private static String TAG = "MyService >>> ";
+
     private boolean isDestroy = false;
     private List<Book> mBookList = new ArrayList<>();
     private List<BookListener> mListenerList = new ArrayList<>();

@@ -13,5 +13,4 @@ interface BookManager {
 
     void registerListener(BookListener listener);
     void unregisterListener(BookListener listener);
-
 }
