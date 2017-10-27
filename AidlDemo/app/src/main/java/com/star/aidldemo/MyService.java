@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -17,12 +18,14 @@ public class MyService extends Service {
 
     private boolean isDestroy = false;
     private List<Book> mBookList = new ArrayList<>();
-    private List<BookListener> mListenerList = new ArrayList<>();
 
     public MyService() {
     }
 
-    Binder myBinder = new BookManager.Stub() {
+    // private List<BookListener> mListenerList = new ArrayList<>();
+    private RemoteCallbackList<BookListener> mListenerList = new RemoteCallbackList<>();
+
+    private Binder myBinder = new BookManager.Stub() {
         @Override
         public int add(int a, int b) throws RemoteException {
             return a + b;
@@ -41,28 +44,31 @@ public class MyService extends Service {
         @Override
         public void registerListener(BookListener listener) throws RemoteException {
             if (listener != null) {
-                if (!mListenerList.contains(listener)) {
-                    mListenerList.add(listener);
-                    Log.e(TAG, "Register Listener");
-                } else {
-                    Log.e(TAG, "Listener already existed");
-                }
+                // if (!mListenerList.contains(listener)) {
+                //     mListenerList.add(listener);
+                //     Log.e(TAG, "Register Listener");
+                // } else {
+                //     Log.e(TAG, "Listener already existed");
+                // }
+                mListenerList.register(listener);
             }
-            Log.e(TAG, "Current listener size: " + mListenerList.size());
+            Log.e(TAG, "After register, current listener size: " + mListenerList.getRegisteredCallbackCount());
         }
 
         @Override
         public void unregisterListener(BookListener listener) throws RemoteException {
             if (listener != null) {
-                if (mListenerList.contains(listener)) {
-                    mListenerList.remove(listener);
-                    Log.e(TAG, "Unregister Listener");
-                } else {
-                    Log.e(TAG, "Listener not found");
-                }
+                // if (mListenerList.contains(listener)) {
+                //     mListenerList.remove(listener);
+                //     Log.e(TAG, "Unregister Listener");
+                // } else {
+                //     Log.e(TAG, "Listener not found");
+                // }
+                mListenerList.unregister(listener);
             }
-            Log.e(TAG, "Current listener size: " + mListenerList.size());
+            Log.e(TAG, "After unregister, current listener size: " + mListenerList.getRegisteredCallbackCount());
         }
+
     };
 
     @Override
@@ -103,14 +109,19 @@ public class MyService extends Service {
 
     private void onPushNewBook(Book book) {
         mBookList.add(book);
-        for (int i = 0; i < mListenerList.size(); i++) {
-            BookListener listener = mListenerList.get(i);
+        // beginBroadcast()需与finishBroadcast()配对已结束使用
+        // 在未调用finishBroadcast()以结束前，beginBroadcast()只能调用一次，否则会提示：
+        // java.lang.IllegalStateException: beginBroadcast() called while already in a broadcast
+        int listenerSize = mListenerList.beginBroadcast();
+        for (int i = 0; i < listenerSize; i++) {
+            BookListener listener = mListenerList.getBroadcastItem(i);
             try {
                 listener.pushNewBook(book);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
         }
+        mListenerList.finishBroadcast();
     }
 
     @Override
