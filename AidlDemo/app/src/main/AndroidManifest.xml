@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.star.aidldemo">
 
+    <permission android:name="com.star.aidldemo"
+                android:protectionLevel="normal"/>
+    <uses-permission android:name="com.star.aidldemo"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

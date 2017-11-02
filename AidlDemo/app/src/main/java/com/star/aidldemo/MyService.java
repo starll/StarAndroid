@@ -2,10 +2,13 @@ package com.star.aidldemo;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+//import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 
@@ -41,6 +44,7 @@ public class MyService extends Service {
             mBookList.add(book);
         }
 
+//        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
         @Override
         public void registerListener(BookListener listener) throws RemoteException {
             if (listener != null) {
@@ -52,9 +56,10 @@ public class MyService extends Service {
                 // }
                 mListenerList.register(listener);
             }
-            Log.e(TAG, "After register, current listener size: " + mListenerList.getRegisteredCallbackCount());
+//            Log.e(TAG, "After register, current listener size: " + mListenerList.getRegisteredCallbackCount());
         }
 
+//        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
         @Override
         public void unregisterListener(BookListener listener) throws RemoteException {
             if (listener != null) {
@@ -66,7 +71,7 @@ public class MyService extends Service {
                 // }
                 mListenerList.unregister(listener);
             }
-            Log.e(TAG, "After unregister, current listener size: " + mListenerList.getRegisteredCallbackCount());
+//            Log.e(TAG, "After unregister, current listener size: " + mListenerList.getRegisteredCallbackCount());
         }
 
     };
@@ -74,6 +79,12 @@ public class MyService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
+        int check = checkCallingOrSelfPermission("com.star.aidldemo");
+        if (check == PackageManager.PERMISSION_DENIED) {
+            Log.e(TAG,"perssion not auto");
+            return null;
+        }
+        Log.e(TAG,"perssion right, onBind...");
         return myBinder;
     }
 
